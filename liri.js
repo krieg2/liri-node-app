@@ -1,5 +1,6 @@
 var keys = require("./keys.js");
 var Twitter = require('twitter');
+var Spotify = require('node-spotify-api');
 
 var arg = process.argv[2];
 
@@ -8,9 +9,11 @@ switch(arg) {
         showTweets();
         break;
     case "spotify-this-song":
-        showSong();
+        var arg2 = process.argv[3];
+        showSong(arg2);
         break;
     case "movie-this":
+        var arg2 = process.argv[3];
         showMovie();
         break;
     case "do-what-it-says":
@@ -38,7 +41,42 @@ function showTweets(){
           }
 
         } else{
-            console.log(error);
+            return console.log('Error occurred: ' + error);
         }
     });
+}
+
+function showSong(song){
+
+    var spotify = new Spotify({
+        id: keys.spotifyKeys.client_id,
+        secret: keys.spotifyKeys.client_secret
+    });
+
+    spotify.search({ type: 'track', query: song }, function(error, data) {
+
+        if (!error) {
+
+           var artists = {};
+            if(data.tracks.items){
+                for(var i=0; i < data.tracks.items.length; i++){
+                    for(var j=0; j < data.tracks.items[i].artists.length; j++){
+
+                        var key = data.tracks.items[i].artists[j].name;
+                        if(artists[key]){
+                            artists[key] = 1;
+                        } else{
+                            artists[key] += 1;
+                        }
+                    }
+                }
+                console.log("Artist(s): " + Object.keys(artists));
+            }
+
+        } else{
+            return console.log('Error occurred: ' + error);
+        }
+     
+    });
+
 }
