@@ -57,9 +57,11 @@ function showSong(song){
 
         if (!error) {
 
-           var artists = {};
             if(data.tracks.items){
+
                 for(var i=0; i < data.tracks.items.length; i++){
+
+                    var artists = {};
                     for(var j=0; j < data.tracks.items[i].artists.length; j++){
 
                         var key = data.tracks.items[i].artists[j].name;
@@ -69,8 +71,11 @@ function showSong(song){
                             artists[key] += 1;
                         }
                     }
+                    console.log("Artist(s): " + Object.keys(artists).join(", "));
+                    console.log("Name: " + data.tracks.items[i].name);
+                    console.log("URL: " + data.tracks.items[i].preview_url);
+                    console.log("Album: " + data.tracks.items[i].album.name + "\n");
                 }
-                console.log("Artist(s): " + Object.keys(artists));
             }
 
         } else{
