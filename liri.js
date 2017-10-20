@@ -1,6 +1,7 @@
 var keys = require("./keys.js");
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
+var request = require('request');
 
 var arg = process.argv[2];
 
@@ -14,7 +15,7 @@ switch(arg) {
         break;
     case "movie-this":
         var arg2 = process.argv[3];
-        showMovie();
+        showMovie(arg2);
         break;
     case "do-what-it-says":
         break;
@@ -41,7 +42,7 @@ function showTweets(){
           }
 
         } else{
-            return console.log('Error occurred: ' + error);
+            return console.log("Error occurred: " + error);
         }
     });
 }
@@ -85,9 +86,35 @@ function showSong(song){
             }
 
         } else{
-            return console.log('Error occurred: ' + error);
+            return console.log("Error occurred: " + error);
         }
      
+    });
+
+}
+
+function showMovie(movie){
+
+    if(movie === undefined){
+        movie = "Mr. Nobody";
+    }
+
+    request("http://www.omdbapi.com/?t="+movie+"&plot=short&apikey=40e9cece", function (error, response, body) {
+      
+        if(!error && response.statusCode === 200){
+
+            var data = JSON.parse(body);
+            console.log("Title: " + data.Title);
+            console.log("Year: " + data.Year);
+            console.log("IMDB Rating: " + data.imdbRating);
+            console.log("Country: " + data.Country);
+            console.log("Language: " + data.Language);
+            console.log("Plot: " + data.Plot);
+            console.log("Actors: " + data.Actors);
+        } else{
+            console.log("Error occurred: " + error);
+        }
+
     });
 
 }
