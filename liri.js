@@ -48,12 +48,18 @@ function showTweets(){
 
 function showSong(song){
 
+    if(song === undefined){
+        var searchObj = { type: 'track', query: "The Sign Ace of Base", limit: 1 }
+    } else {
+        var searchObj = { type: 'track', query: song }
+    }
+
     var spotify = new Spotify({
         id: keys.spotifyKeys.client_id,
         secret: keys.spotifyKeys.client_secret
     });
 
-    spotify.search({ type: 'track', query: song }, function(error, data) {
+    spotify.search(searchObj, function(error, data) {
 
         if (!error) {
 
