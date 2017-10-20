@@ -1,26 +1,37 @@
 var keys = require("./keys.js");
-var Twitter = require('twitter');
-var Spotify = require('node-spotify-api');
-var request = require('request');
+var Twitter = require("twitter");
+var Spotify = require("node-spotify-api");
+var request = require("request");
+var fs = require("fs");
 
-var arg = process.argv[2];
+menuSwitch(process.argv.slice(2,4));
 
-switch(arg) {
-    case "my-tweets":
-        showTweets();
-        break;
-    case "spotify-this-song":
-        var arg2 = process.argv[3];
-        showSong(arg2);
-        break;
-    case "movie-this":
-        var arg2 = process.argv[3];
-        showMovie(arg2);
-        break;
-    case "do-what-it-says":
-        break;
+function menuSwitch(args){
+
+    var arg1 = args[0];
+    var arg2 = "";
+
+    switch(arg1) {
+        case "my-tweets":
+            showTweets();
+            break;
+        case "spotify-this-song":
+            arg2 = args[1];
+            showSong(arg2);
+            break;
+        case "movie-this":
+            arg2 = args[1];
+            showMovie(arg2);
+            break;
+        case "do-what-it-says":
+            arg2 = args[1];
+            doFile(arg2);
+            break;
+        default:
+            console.log("Not a supported option.");
+            break;
+    }
 }
-
 
 function showTweets(){
 
@@ -117,4 +128,21 @@ function showMovie(movie){
 
     });
 
+}
+
+function doFile(filename){
+
+    if(filename === undefined){
+        filename = "random.txt";
+    }
+
+    fs.readFile(filename, "utf8", function(error, data) {
+
+        if (!error) {
+            var dataArr = data.split(",");
+            menuSwitch(dataArr.slice(0,2));
+        } else{
+            console.log("Error occurred: " + error);
+        }
+    });
 }
