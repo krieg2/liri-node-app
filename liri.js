@@ -3,34 +3,43 @@ var Twitter = require("twitter");
 var Spotify = require("node-spotify-api");
 var request = require("request");
 var fs = require("fs");
+var logfile = "./log.txt"
+var prompt = "Valid commands are: " + "\n" +
+             "    my-tweets" + "\n" +
+             "    spotify-this-song <song name>" + "\n" +
+             "    movie-this <movie title>" + "\n" +
+             "    do-what-it-says";
 
-menuSwitch(process.argv.slice(2,4));
+
+if(process.argv.length > 4){
+    console.log(prompt);
+    console.log("\n(Please use quotes around your song name or movie title.)");
+} else{
+    menuSwitch(process.argv.slice(2,4));
+}
 
 function menuSwitch(args){
 
-    var arg1 = args[0];
-    var arg2 = "";
-
-    switch(arg1) {
+    switch(args[0]) {
         case "my-tweets":
+            cmd = "my-tweets";
             showTweets();
             break;
         case "spotify-this-song":
-            arg2 = args[1];
-            showSong(arg2);
+            showSong(args[1]);
             break;
         case "movie-this":
-            arg2 = args[1];
-            showMovie(arg2);
+            showMovie(args[1]);
             break;
         case "do-what-it-says":
-            arg2 = args[1];
-            doFile(arg2);
+            doFile(args[1]);
             break;
         default:
-            console.log("Not a supported option.");
+            console.log("Not a supported option!\n");
+            console.log(prompt);
             break;
     }
+
 }
 
 function showTweets(){
@@ -46,16 +55,21 @@ function showTweets(){
                   count: 20};
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
 
+        var result = "";
+
         if (!error) {
 
           for(var i=0; i < tweets.length; i++){
-              console.log(tweets[i].text);
+              result += tweets[i].text + "\n";
           }
 
         } else{
-            return console.log("Error occurred: " + error);
+            result = "Error occurred: " + error;
         }
+
+        logResults("my-tweets", result);
     });
+
 }
 
 function showSong(song){
@@ -73,6 +87,8 @@ function showSong(song){
 
     spotify.search(searchObj, function(error, data) {
 
+        var result = "";
+
         if (!error) {
 
             if(data.tracks.items){
@@ -89,17 +105,18 @@ function showSong(song){
                             artists[key] += 1;
                         }
                     }
-                    console.log("Artist(s): " + Object.keys(artists).join(", "));
-                    console.log("Name: " + data.tracks.items[i].name);
-                    console.log("URL: " + data.tracks.items[i].preview_url);
-                    console.log("Album: " + data.tracks.items[i].album.name + "\n");
+                    result += "Artist(s): " + Object.keys(artists).join(", ") + "\n";
+                    result += "Name: " + data.tracks.items[i].name + "\n";
+                    result += "URL: " + data.tracks.items[i].preview_url + "\n";
+                    result += "Album: " + data.tracks.items[i].album.name + "\n\n";
                 }
             }
 
         } else{
-            return console.log("Error occurred: " + error);
+            result = "Error occurred: " + error;
         }
-     
+
+        logResults("spotify-this-song", result);
     });
 
 }
@@ -112,25 +129,30 @@ function showMovie(movie){
 
     request("http://www.omdbapi.com/?t="+movie+"&plot=short&apikey=40e9cece", function (error, response, body) {
       
+        var result = "";
+
         if(!error && response.statusCode === 200){
 
             var data = JSON.parse(body);
-            console.log("Title: " + data.Title);
-            console.log("Year: " + data.Year);
-            console.log("IMDB Rating: " + data.imdbRating);
-            console.log("Country: " + data.Country);
-            console.log("Language: " + data.Language);
-            console.log("Plot: " + data.Plot);
-            console.log("Actors: " + data.Actors);
+            result += "Title: " + data.Title + "\n";
+            result += "Year: " + data.Year + "\n";
+            result += "IMDB Rating: " + data.imdbRating + "\n";
+            result += "Country: " + data.Country + "\n";
+            result += "Language: " + data.Language + "\n";
+            result += "Plot: " + data.Plot + "\n";
+            result += "Actors: " + data.Actors + "\n";
         } else{
-            console.log("Error occurred: " + error);
+            result = "Error occurred: " + error;
         }
 
+        logResults("movie-this", result);
     });
 
 }
 
 function doFile(filename){
+
+    var result = "";
 
     if(filename === undefined){
         filename = "random.txt";
@@ -142,7 +164,29 @@ function doFile(filename){
             var dataArr = data.split(",");
             menuSwitch(dataArr.slice(0,2));
         } else{
-            console.log("Error occurred: " + error);
+            result = "Error occurred: " + error;
         }
+    });
+
+    if(result !== ""){
+        logResults("do-what-it-says "+filename, result);
+    }
+}
+
+function logResults(command, results){
+
+    console.log(results);
+
+    var tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    var timestamp = (new Date(Date.now() - tzoffset)).toISOString().replace(/T|Z/gi, " ");
+ 
+    fs.appendFile(logfile, timestamp + ">>\n\n" + 
+                           command + "\n\n" +
+                           results + "\n\n", function(error) {
+
+        if(error) {
+            console.log(error);
+        }
+
     });
 }
