@@ -60,7 +60,9 @@ function showTweets(){
         if (!error) {
 
           for(var i=0; i < tweets.length; i++){
-              result += tweets[i].text + "\n";
+
+              result += "\"" + tweets[i].text + "\"\n" +
+                        tweets[i].created_at + "\n\n";
           }
 
         } else{
