@@ -127,7 +127,9 @@ function showMovie(movie){
         movie = "Mr. Nobody";
     }
 
-    request("http://www.omdbapi.com/?t="+movie+"&plot=short&apikey=40e9cece", function (error, response, body) {
+    var apiKey = keys.omdbKeys.api_key;
+
+    request(`http://www.omdbapi.com/?t=${movie}&plot=short&apikey=${apiKey}`, function (error, response, body) {
       
         var result = "";
 
